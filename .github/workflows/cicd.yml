@@ -1,0 +1,23 @@
+jobs:
+  Build-and-Deploy:
+  runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm start &
+      - run: npm test
+      - uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          script: |
+            cd /home/yc-user/app/backend
+            git pull
+            cd /home/yc-user/app
+            docker compose down
+            docker compose up -d --build
